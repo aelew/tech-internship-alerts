@@ -58,12 +58,17 @@ async function getNewListings(
   if (await oldListingFile.exists()) {
     const oldListingData: Listing[] = await oldListingFile.json();
 
-    newListings = newListingData.filter(
-      (newListing) =>
-        !oldListingData.find((oldListing) => oldListing.id === newListing.id) &&
+    newListings = newListingData.filter((newListing) => {
+      const oldListing = oldListingData.find((ol) => ol.id === newListing.id);
+      if (!oldListing) {
+        return newListing.active && newListing.is_visible;
+      }
+      return (
+        newListing.active &&
         newListing.is_visible &&
-        newListing.active
-    );
+        (!oldListing.active || !oldListing.is_visible)
+      );
+    });
   }
 
   // Save new listings so we can compare them next time
