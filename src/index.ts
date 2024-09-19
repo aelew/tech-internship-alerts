@@ -214,7 +214,7 @@ async function sendClosedListingUpdate(repoSlug: string, listing: Listing) {
     const payload = {
       embeds: [
         {
-          ...alert.payload,
+          ...alert.payload.embeds[0],
           color: 15680580,
           title: '❌  Inactive Job Listing'
         }
