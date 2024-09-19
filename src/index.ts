@@ -13,7 +13,7 @@ if (!(CRON_PATTERN && DISCORD_WEBHOOK_URL)) {
 async function updateGitRepos() {
   for (const repoUrl of GIT_REPOS) {
     const repoSlug = getRepoSlug(repoUrl);
-    const localPath = `./cache/repos/${repoSlug.replace('/', '-')}`;
+    const localPath = `./data/repos/${repoSlug.replace('/', '-')}`;
 
     if (await directoryExists(localPath)) {
       const repoListingsPathFile = Bun.file(
@@ -189,7 +189,7 @@ async function sendListingAlert(repoSlug: string, listing: Listing) {
   const message = await response.json();
 
   // Saves the alert message ID so we can edit the message when the listing closes
-  const alertsFile = Bun.file('./cache/alerts.json');
+  const alertsFile = Bun.file('./data/alerts.json');
   const alertData = (await alertsFile.exists()) ? await alertsFile.json() : {};
   const alertSlug = getAlertSlug(repoSlug, listing);
 
@@ -202,7 +202,7 @@ async function sendListingAlert(repoSlug: string, listing: Listing) {
 }
 
 async function sendClosedListingUpdate(repoSlug: string, listing: Listing) {
-  const alertsFile = Bun.file('./cache/alerts.json');
+  const alertsFile = Bun.file('./data/alerts.json');
   const alertData = (await alertsFile.exists()) ? await alertsFile.json() : {};
   const alertSlug = getAlertSlug(repoSlug, listing);
 
@@ -252,8 +252,8 @@ async function checkInternshipListings() {
     const repoPathSlug = repoSlug.replace('/', '-');
 
     const { openedListings, closedListings } = await getListingUpdates(
-      `./cache/listings/${repoPathSlug}.json`,
-      `./cache/repos/${repoPathSlug}/.github/scripts/listings.json`
+      `./data/listings/${repoPathSlug}.json`,
+      `./data/repos/${repoPathSlug}/.github/scripts/listings.json`
     );
 
     if (openedListings.length) {
