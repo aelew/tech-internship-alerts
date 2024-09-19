@@ -160,9 +160,10 @@ async function sendListingAlert(repoSlug: string, listing: Listing) {
           },
           {
             name: 'URL',
-            value: repoSlug.startsWith('SimplifyJobs')
-              ? `https://simplify.jobs/p/${listing.id}`
-              : listing.url
+            value:
+              listing.source === 'Simplify'
+                ? `https://simplify.jobs/p/${listing.id}`
+                : listing.url
           }
         ]
       }
