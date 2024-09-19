@@ -23,7 +23,7 @@ async function updateGitRepos() {
           .pull();
 
         // biome-ignore format: hard to read
-        console.log('Pulled', repoSlug, '(', summary.changes, ' changes,', summary.insertions, ' insertions,', summary.deletions, ' deletions )');
+        console.log('Pulled', repoSlug, '(', summary.changes, 'changes,', summary.insertions, 'insertions,', summary.deletions, 'deletions )');
       } catch (err) {
         console.error(err);
         console.error(`Failed to pull ${repoSlug}, recloning...`);
