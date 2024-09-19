@@ -85,7 +85,9 @@ async function sendListingAlert(repoSlug: string, listing: Listing) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      content: `<@&${process.env.DISCORD_MENTION_ROLE_ID}>`,
+      content: process.env.DISCORD_MENTION_ROLE_ID
+        ? `<@&${process.env.DISCORD_MENTION_ROLE_ID}>`
+        : '',
       embeds: [
         {
           color: 0xffffac33,
