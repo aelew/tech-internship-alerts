@@ -1,5 +1,5 @@
 import { Cron } from 'croner';
-import { simpleGit as git } from 'simple-git';
+import { CleanOptions, simpleGit as git } from 'simple-git';
 import { GIT_REPOS } from './data';
 import { directoryExists, getAlertSlug, getRepoSlug } from './utils';
 import { rimraf } from 'rimraf';
@@ -17,7 +17,10 @@ async function updateGitRepos() {
 
     if (await directoryExists(localPath)) {
       try {
-        const { summary } = await git().cwd(localPath).pull();
+        const { summary } = await git()
+          .cwd(localPath)
+          .clean(CleanOptions.FORCE)
+          .pull();
 
         // biome-ignore format: hard to read
         console.log('Pulled', repoSlug, '(', summary.changes, ' changes,', summary.insertions, ' insertions,', summary.deletions, ' deletions )');
