@@ -1,0 +1,25 @@
+{
+  "name": "tech-internship-alerts",
+  "module": "src/index.ts",
+  "author": "aelew",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "preinstall": "npx only-allow bun",
+    "format": "biome format --write ."
+  },
+  "dependencies": {
+    "croner": "^8.1.1",
+    "only-allow": "^1.2.1",
+    "rimraf": "^6.0.1",
+    "simple-git": "^3.26.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.1",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "trustedDependencies": ["@biomejs/biome"]
+}
