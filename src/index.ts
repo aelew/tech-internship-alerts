@@ -1,7 +1,7 @@
 import { Cron } from 'croner';
 import { simpleGit as git } from 'simple-git';
 import { GIT_REPOS } from './data';
-import { directoryExists, getRepoSlug } from './utils';
+import { directoryExists, getAlertSlug, getRepoSlug } from './utils';
 import { rimraf } from 'rimraf';
 import type { Listing } from './types';
 
@@ -17,19 +17,10 @@ async function updateGitRepos() {
 
     if (await directoryExists(localPath)) {
       try {
-        const pullResult = await git(localPath).pull();
+        const { summary } = await git(localPath).pull();
 
-        console.log(
-          'Pulled',
-          repoSlug,
-          '(',
-          pullResult.summary.changes,
-          ' changes,',
-          pullResult.summary.insertions,
-          ' insertions,',
-          pullResult.summary.deletions,
-          ' deletions )'
-        );
+        // biome-ignore format: hard to read
+        console.log('Pulled', repoSlug, '(', summary.changes, ' changes,', summary.insertions, ' insertions,', summary.deletions, ' deletions )');
       } catch (err) {
         console.error(err);
         console.error(`Failed to pull ${repoSlug}, recloning...`);
@@ -46,109 +37,128 @@ async function updateGitRepos() {
   }
 }
 
-async function getNewListings(
+async function getListingUpdates(
   oldListingsPath: string,
   repoListingsPath: string
 ) {
   const oldListingFile = Bun.file(oldListingsPath);
-  let newListings: Listing[] = [];
+  const repoListingData: Listing[] = await Bun.file(repoListingsPath).json();
 
-  const newListingData: Listing[] = await Bun.file(repoListingsPath).json();
+  const closedListings: Listing[] = [];
+  let openedListings: Listing[] = [];
 
   if (await oldListingFile.exists()) {
     const oldListingData: Listing[] = await oldListingFile.json();
 
-    newListings = newListingData.filter((newListing) => {
-      const oldListing = oldListingData.find((ol) => ol.id === newListing.id);
+    openedListings = repoListingData.filter((newListing) => {
+      const oldListing = oldListingData.find(
+        (ol) =>
+          ol.id === newListing.id && ol.company_name === newListing.company_name
+      );
       if (!oldListing) {
         return newListing.active && newListing.is_visible;
       }
-      return (
+
+      const isNowActive =
         newListing.active &&
         newListing.is_visible &&
-        (!oldListing.active || !oldListing.is_visible)
-      );
+        ((!oldListing.active && newListing.active) ||
+          (!oldListing.is_visible && newListing.is_visible));
+
+      if (isNowActive) {
+        return true;
+      }
+
+      const isNowInactive =
+        (oldListing.active && !newListing.active) ||
+        (oldListing.is_visible && !newListing.is_visible);
+
+      // The listing has turned inactive or hidden
+      if (isNowInactive) {
+        closedListings.push(newListing);
+      }
+
+      return false;
     });
   }
 
   // Save new listings so we can compare them next time
-  await Bun.write(oldListingsPath, JSON.stringify(newListingData));
+  await Bun.write(oldListingsPath, JSON.stringify(repoListingData));
 
-  return newListings;
+  return { openedListings, closedListings };
 }
 
 async function sendListingAlert(repoSlug: string, listing: Listing) {
-  if (!DISCORD_WEBHOOK_URL) {
-    return;
-  }
-  const response = await fetch(DISCORD_WEBHOOK_URL, {
-    method: 'POST',
+  const payload = {
+    content: process.env.DISCORD_MENTION_ROLE_ID
+      ? `<@&${process.env.DISCORD_MENTION_ROLE_ID}>`
+      : '',
+    embeds: [
+      {
+        color: 0xffffac33,
+        title: '🔔 New Job Listing',
+        fields: [
+          {
+            name: 'Company',
+            value:
+              listing.company_url !== ''
+                ? `[${listing.company_name}](${listing.company_url})`
+                : listing.company_name,
+            inline: true
+          },
+          {
+            name: 'Role',
+            value: listing.title,
+            inline: true
+          },
+          {
+            name: '\u200b',
+            value: '\u200b',
+            inline: true
+          },
+          {
+            name: 'Season',
+            // biome-ignore format: hard to read
+            value: 'terms' in listing
+              ? listing.terms.join(', ')
+              : listing.season,
+            inline: true
+          },
+          {
+            name: 'Source',
+            value: listing.source,
+            inline: true
+          },
+          {
+            name: 'Sponsorship',
+            value: listing.sponsorship,
+            inline: true
+          },
+          {
+            name: 'Locations',
+            value: listing.locations.join(' / '),
+            inline: true
+          },
+          {
+            name: 'Posted',
+            value: `<t:${listing.date_posted}:R>`,
+            inline: true
+          },
+          {
+            name: 'URL',
+            value: repoSlug.startsWith('SimplifyJobs')
+              ? `https://simplify.jobs/p/${listing.id}`
+              : listing.url
+          }
+        ]
+      }
+    ]
+  };
+
+  const response = await fetch(`${DISCORD_WEBHOOK_URL}?wait=true`, {
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      content: process.env.DISCORD_MENTION_ROLE_ID
-        ? `<@&${process.env.DISCORD_MENTION_ROLE_ID}>`
-        : '',
-      embeds: [
-        {
-          color: 0xffffac33,
-          title: '🔔 New Job Listing',
-          fields: [
-            {
-              name: 'Company',
-              value:
-                listing.company_url !== ''
-                  ? `[${listing.company_name}](${listing.company_url})`
-                  : listing.company_name,
-              inline: true
-            },
-            {
-              name: 'Role',
-              value: listing.title,
-              inline: true
-            },
-            {
-              name: '\u200b',
-              value: '\u200b',
-              inline: true
-            },
-            {
-              name: 'Season',
-              // biome-ignore format: ugly
-              value: 'terms' in listing
-                ? listing.terms.join(', ')
-                : listing.season,
-              inline: true
-            },
-            {
-              name: 'Source',
-              value: listing.source,
-              inline: true
-            },
-            {
-              name: 'Sponsorship',
-              value: listing.sponsorship,
-              inline: true
-            },
-            {
-              name: 'Locations',
-              value: listing.locations.join(' / '),
-              inline: true
-            },
-            {
-              name: 'Posted',
-              value: `<t:${listing.date_posted}:R>`,
-              inline: true
-            },
-            {
-              name: 'URL',
-              value: repoSlug.startsWith('SimplifyJobs')
-                ? `https://simplify.jobs/p/${listing.id}`
-                : listing.url
-            }
-          ]
-        }
-      ]
-    })
+    body: JSON.stringify(payload),
+    method: 'POST'
   });
   if (!response.ok) {
     console.warn(
@@ -157,6 +167,47 @@ async function sendListingAlert(repoSlug: string, listing: Listing) {
       response.statusText,
       ')'
     );
+  }
+
+  const message = await response.json();
+
+  // Saves the alert message ID so we can edit the message when the listing closes
+  const alertsFile = Bun.file('./cache/alerts.json');
+  const alertData = (await alertsFile.exists()) ? await alertsFile.json() : {};
+  const alertSlug = getAlertSlug(repoSlug, listing);
+
+  alertData[alertSlug] = [
+    ...(alertData[alertSlug] || []),
+    { messageId: message.id, payload }
+  ];
+
+  Bun.write(alertsFile, JSON.stringify(alertData));
+}
+
+async function sendClosedListingUpdate(repoSlug: string, listing: Listing) {
+  const alertsFile = Bun.file('./cache/alerts.json');
+  const alertData = (await alertsFile.exists()) ? await alertsFile.json() : {};
+  const alertSlug = getAlertSlug(repoSlug, listing);
+
+  const alerts = alertData[alertSlug];
+  if (!alerts) {
+    return;
+  }
+
+  for (const alert of alerts) {
+    await fetch(`${DISCORD_WEBHOOK_URL}/messages/${alert.messageId}`, {
+      headers: { 'Content-Type': 'application/json' },
+      method: 'PATCH',
+      body: JSON.stringify({
+        embeds: [
+          {
+            ...alert.payload,
+            color: 0xffef4444,
+            title: '❌  Inactive Job Listing'
+          }
+        ]
+      })
+    });
   }
 }
 
@@ -168,16 +219,26 @@ async function checkInternshipListings() {
     const repoSlug = getRepoSlug(repoUrl);
     const repoPathSlug = repoSlug.replace('/', '-');
 
-    const newListings = await getNewListings(
+    const { openedListings, closedListings } = await getListingUpdates(
       `./cache/listings/${repoPathSlug}.json`,
       `./cache/repos/${repoPathSlug}/.github/scripts/listings.json`
     );
 
-    if (newListings.length) {
-      console.log('Found', newListings.length, 'new listings in', repoSlug);
+    if (openedListings.length) {
+      // biome-ignore format: hard to read
+      console.log('Found', openedListings.length, 'opened listings in', repoSlug);
 
-      for (const newListing of newListings) {
-        await sendListingAlert(repoSlug, newListing);
+      for (const openedListing of openedListings) {
+        await sendListingAlert(repoSlug, openedListing);
+      }
+    }
+
+    if (closedListings.length) {
+      // biome-ignore format: hard to read
+      console.log('Found', closedListings.length, 'closed listings in', repoSlug);
+
+      for (const closedListing of closedListings) {
+        await sendClosedListingUpdate(repoSlug, closedListing);
       }
     }
   }
