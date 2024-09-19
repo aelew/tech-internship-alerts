@@ -1,6 +1,6 @@
 # 🔔 Tech Internship Alerts
 
-Monitors GitHub repositories for new internships and sends new job listing alerts to Discord. This project is inspired by [cvrve/internships-bot](https://github.com/cvrve/internships-bot)!
+Monitors GitHub repositories for new internships and sends alerts to Discord. This project is inspired by [cvrve/internships-bot](https://github.com/cvrve/internships-bot)!
 
 ## 🌱 Discord server
 
