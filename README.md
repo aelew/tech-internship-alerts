@@ -2,7 +2,7 @@
 
 Monitors GitHub repositories for new internships and sends alerts to Discord. This project is inspired by [cvrve/internships-bot](https://github.com/cvrve/internships-bot)!
 
-![Example](./images/example.png)
+[![Example](./images/example.png)](https://discord.gg/P93Kc6jEKA)
 
 ## 🌱 Discord server
 
