@@ -197,19 +197,34 @@ async function sendClosedListingUpdate(repoSlug: string, listing: Listing) {
   }
 
   for (const alert of alerts) {
-    await fetch(`${DISCORD_WEBHOOK_URL}/messages/${alert.messageId}`, {
-      headers: { 'Content-Type': 'application/json' },
-      method: 'PATCH',
-      body: JSON.stringify({
-        embeds: [
-          {
-            ...alert.payload,
-            color: 0xffef4444,
-            title: '❌  Inactive Job Listing'
-          }
-        ]
-      })
-    });
+    const payload = {
+      embeds: [
+        {
+          ...alert.payload,
+          color: 0xffef4444,
+          title: '❌  Inactive Job Listing'
+        }
+      ]
+    };
+
+    const response = await fetch(
+      `${DISCORD_WEBHOOK_URL}/messages/${alert.messageId}`,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        method: 'PATCH'
+      }
+    );
+    if (!response.ok) {
+      console.warn(
+        'Failed to send closed listing update (Status:',
+        response.status,
+        `${response.statusText})`
+      );
+      console.log('-> Payload:', payload);
+      console.log('-> Response:', await response.json());
+      return;
+    }
   }
 }
 
