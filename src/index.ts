@@ -17,7 +17,7 @@ async function updateGitRepos() {
 
     if (await directoryExists(localPath)) {
       try {
-        const { summary } = await git(localPath).pull();
+        const { summary } = await git().cwd(localPath).pull();
 
         // biome-ignore format: hard to read
         console.log('Pulled', repoSlug, '(', summary.changes, ' changes,', summary.insertions, ' insertions,', summary.deletions, ' deletions )');
@@ -25,7 +25,7 @@ async function updateGitRepos() {
         console.error(err);
         console.error(`Failed to pull ${repoSlug}, recloning...`);
 
-        await rimraf(localPath);
+        await rimraf(localPath, { preserveRoot: false });
         await git().clone(repoUrl, localPath);
 
         console.log('Cloned', repoSlug, '->', localPath);
@@ -164,9 +164,11 @@ async function sendListingAlert(repoSlug: string, listing: Listing) {
     console.warn(
       'Failed to send listing alert (Status:',
       response.status,
-      response.statusText,
-      ')'
+      `${response.statusText})`
     );
+    console.log('-> Payload:', payload);
+    console.log('-> Response:', await response.json());
+    return;
   }
 
   const message = await response.json();
@@ -230,6 +232,7 @@ async function checkInternshipListings() {
 
       for (const openedListing of openedListings) {
         await sendListingAlert(repoSlug, openedListing);
+        await Bun.sleep(1000);
       }
     }
 
@@ -246,3 +249,5 @@ async function checkInternshipListings() {
 
 const job = new Cron(CRON_PATTERN, checkInternshipListings);
 console.log('Job started, running on schedule', job.getPattern());
+
+job.trigger();
