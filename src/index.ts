@@ -1,5 +1,5 @@
 import { Cron } from 'croner';
-import { CleanOptions, simpleGit as git } from 'simple-git';
+import { simpleGit as git } from 'simple-git';
 import { GIT_REPOS } from './data';
 import { directoryExists, getAlertSlug, getRepoSlug } from './utils';
 import { rimraf } from 'rimraf';
@@ -16,11 +16,16 @@ async function updateGitRepos() {
     const localPath = `./cache/repos/${repoSlug.replace('/', '-')}`;
 
     if (await directoryExists(localPath)) {
+      const repoListingsPathFile = Bun.file(
+        `${localPath}/.github/scripts/listings.json`
+      );
+      if (!(await repoListingsPathFile.exists())) {
+        console.log(`Skipping ${repoSlug}, not ready yet`);
+        return;
+      }
+
       try {
-        const { summary } = await git()
-          .cwd(localPath)
-          .clean(CleanOptions.FORCE)
-          .pull();
+        const { summary } = await git().cwd(localPath).pull();
 
         // biome-ignore format: hard to read
         console.log('Pulled', repoSlug, '(', summary.changes, 'changes,', summary.insertions, 'insertions,', summary.deletions, 'deletions )');
@@ -28,13 +33,15 @@ async function updateGitRepos() {
         console.error(err);
         console.error(`Failed to pull ${repoSlug}, recloning...`);
 
-        await rimraf(localPath, { preserveRoot: false });
-        await git().clone(repoUrl, localPath);
+        await rimraf(localPath);
 
+        console.log('Recloning', repoSlug, '->', localPath);
+        await git().clone(repoUrl, localPath, ['--depth=1']);
         console.log('Cloned', repoSlug, '->', localPath);
       }
     } else {
-      await git().clone(repoUrl, localPath);
+      console.log('Cloning', repoSlug, '->', localPath);
+      await git().clone(repoUrl, localPath, ['--depth=1']);
       console.log('Cloned', repoSlug, '->', localPath);
     }
   }
@@ -44,16 +51,20 @@ async function getListingUpdates(
   oldListingsPath: string,
   repoListingsPath: string
 ) {
-  const oldListingFile = Bun.file(oldListingsPath);
-  const repoListingData: Listing[] = await Bun.file(repoListingsPath).json();
+  const oldListingsFile = Bun.file(oldListingsPath);
+  const repoListingsFile = Bun.file(repoListingsPath);
+  if (!(await repoListingsFile.exists())) {
+    return { openedListings: [], closedListings: [] };
+  }
 
+  const repoListingsData: Listing[] = await repoListingsFile.json();
   const closedListings: Listing[] = [];
   let openedListings: Listing[] = [];
 
-  if (await oldListingFile.exists()) {
-    const oldListingData: Listing[] = await oldListingFile.json();
+  if (await oldListingsFile.exists()) {
+    const oldListingData: Listing[] = await oldListingsFile.json();
 
-    openedListings = repoListingData.filter((newListing) => {
+    openedListings = repoListingsData.filter((newListing) => {
       const oldListing = oldListingData.find(
         (ol) =>
           ol.id === newListing.id && ol.company_name === newListing.company_name
@@ -86,7 +97,7 @@ async function getListingUpdates(
   }
 
   // Save new listings so we can compare them next time
-  await Bun.write(oldListingsPath, JSON.stringify(repoListingData));
+  await Bun.write(oldListingsPath, JSON.stringify(repoListingsData));
 
   return { openedListings, closedListings };
 }
@@ -98,7 +109,7 @@ async function sendListingAlert(repoSlug: string, listing: Listing) {
       : '',
     embeds: [
       {
-        color: 0xffffac33,
+        color: 16755763,
         title: '🔔 New Job Listing',
         fields: [
           {
@@ -169,8 +180,8 @@ async function sendListingAlert(repoSlug: string, listing: Listing) {
       response.status,
       `${response.statusText})`
     );
-    console.log('-> Payload:', payload);
-    console.log('-> Response:', await response.json());
+    console.log('-> Payload:', JSON.stringify(payload));
+    console.log('-> Response:', await response.text());
     return;
   }
 
@@ -204,7 +215,7 @@ async function sendClosedListingUpdate(repoSlug: string, listing: Listing) {
       embeds: [
         {
           ...alert.payload,
-          color: 0xffef4444,
+          color: 15680580,
           title: '❌  Inactive Job Listing'
         }
       ]
@@ -224,8 +235,8 @@ async function sendClosedListingUpdate(repoSlug: string, listing: Listing) {
         response.status,
         `${response.statusText})`
       );
-      console.log('-> Payload:', payload);
-      console.log('-> Response:', await response.json());
+      console.log('-> Payload:', JSON.stringify(payload));
+      console.log('-> Response:', await response.text());
       return;
     }
   }
