@@ -73,16 +73,6 @@ async function getListingUpdates(
         return newListing.active && newListing.is_visible;
       }
 
-      const isNowActive =
-        newListing.active &&
-        newListing.is_visible &&
-        ((!oldListing.active && newListing.active) ||
-          (!oldListing.is_visible && newListing.is_visible));
-
-      if (isNowActive) {
-        return true;
-      }
-
       const isNowInactive =
         (oldListing.active && !newListing.active) ||
         (oldListing.is_visible && !newListing.is_visible);
