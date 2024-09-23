@@ -262,6 +262,7 @@ async function checkInternshipListings() {
 
       for (const closedListing of closedListings) {
         await sendClosedListingUpdate(repoSlug, closedListing);
+        await Bun.sleep(1000);
       }
     }
   }
