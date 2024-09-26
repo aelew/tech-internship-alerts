@@ -228,7 +228,10 @@ async function sendClosedListingUpdate(repoSlug: string, listing: Listing) {
       );
       console.log('-> Payload:', JSON.stringify(payload));
       console.log('-> Response:', await response.text());
-      return;
+    }
+
+    if (alerts.length > 1) {
+      await Bun.sleep(1000);
     }
   }
 }
