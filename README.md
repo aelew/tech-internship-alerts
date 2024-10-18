@@ -2,6 +2,10 @@
 
 Monitors GitHub repositories for new internships and sends alerts to Discord. This project is inspired by [cvrve/internships-bot](https://github.com/cvrve/internships-bot)!
 
+## 🌱 Discord server
+
+Join the [Tech Internship Alerts Discord server](https://discord.gg/P93Kc6jEKA) to get notified when new internships are posted!
+
 ## ✨ Features
 
 - Mentions users with the `@Internship Alerts` role when a new internship is found
@@ -10,10 +14,6 @@ Monitors GitHub repositories for new internships and sends alerts to Discord. Th
 - Monitor multiple GitHub repositories at once
 
 [![Example](./images/example.png)](https://discord.gg/P93Kc6jEKA)
-
-## 🌱 Discord server
-
-Join the [Tech Internship Alerts Discord server](https://discord.gg/P93Kc6jEKA) to get notified when new internships are posted!
 
 ## 🧞 Commands
 
