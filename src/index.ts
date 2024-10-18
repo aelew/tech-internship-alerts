@@ -135,7 +135,7 @@ async function sendListingAlert(repoSlug: string, listing: Listing) {
           },
           {
             name: 'Source',
-            value: listing.source,
+            value: repoSlug.split('/')[0],
             inline: true
           },
           {
