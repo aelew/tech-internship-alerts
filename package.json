@@ -9,7 +9,7 @@
     "format": "biome format --write ."
   },
   "dependencies": {
-    "croner": "^8.1.2",
+    "croner": "^9.0.0",
     "only-allow": "^1.2.1",
     "rimraf": "^6.0.1",
     "simple-git": "^3.27.0"
