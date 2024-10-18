@@ -20,29 +20,34 @@ async function updateGitRepos() {
         `${localPath}/.github/scripts/listings.json`
       );
       if (!(await repoListingsPathFile.exists())) {
-        console.log(`Skipping ${repoSlug}, not ready yet`);
+        console.log(`Skipping ${repoSlug}, missing listings file...`);
         return;
       }
 
       try {
         const { summary } = await git().cwd(localPath).pull();
 
-        // biome-ignore format: hard to read
-        console.log('Pulled', repoSlug, '(', summary.changes, 'changes,', summary.insertions, 'insertions,', summary.deletions, 'deletions )');
+        if (summary.changes || summary.insertions || summary.deletions) {
+          console.log(
+            'Pulled',
+            repoSlug,
+            `(${summary.changes} changes, ${summary.insertions} insertions, ${summary.deletions} deletions)`
+          );
+        }
       } catch (err) {
         console.error(err);
         console.error(`Failed to pull ${repoSlug}, recloning...`);
 
         await rimraf(localPath);
 
-        console.log('Recloning', repoSlug, '->', localPath);
+        console.log(`Recloning ${repoSlug} -> ${localPath}...`);
         await git().clone(repoUrl, localPath, ['--depth=1']);
-        console.log('Cloned', repoSlug, '->', localPath);
+        console.log(`Cloned ${repoSlug} -> ${localPath}...`);
       }
     } else {
-      console.log('Cloning', repoSlug, '->', localPath);
+      console.log(`Cloning ${repoSlug} -> ${localPath}...`);
       await git().clone(repoUrl, localPath, ['--depth=1']);
-      console.log('Cloned', repoSlug, '->', localPath);
+      console.log(`Cloned ${repoSlug} -> ${localPath}...`);
     }
   }
 }
@@ -122,7 +127,7 @@ async function sendListingAlert(repoSlug: string, listing: Listing) {
           },
           {
             name: 'Season',
-            // biome-ignore format: hard to read
+            // biome-ignore format: readability
             value: 'terms' in listing
               ? listing.terms.join(', ')
               : listing.season,
@@ -237,7 +242,6 @@ async function sendClosedListingUpdate(repoSlug: string, listing: Listing) {
 }
 
 async function checkInternshipListings() {
-  console.log('Checking for new internships...');
   await updateGitRepos();
 
   for (const repoUrl of GIT_REPOS) {
@@ -250,8 +254,9 @@ async function checkInternshipListings() {
     );
 
     if (openedListings.length) {
-      // biome-ignore format: hard to read
-      console.log('Found', openedListings.length, 'opened listings in', repoSlug);
+      console.log(
+        `Found ${openedListings.length} opened listings in ${repoSlug}`
+      );
 
       for (const openedListing of openedListings) {
         await sendListingAlert(repoSlug, openedListing);
@@ -260,8 +265,9 @@ async function checkInternshipListings() {
     }
 
     if (closedListings.length) {
-      // biome-ignore format: hard to read
-      console.log('Found', closedListings.length, 'closed listings in', repoSlug);
+      console.log(
+        `Found ${closedListings.length} closed listings in ${repoSlug}`
+      );
 
       for (const closedListing of closedListings) {
         await sendClosedListingUpdate(repoSlug, closedListing);
