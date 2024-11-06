@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "preinstall": "npx only-allow bun",
-    "format": "biome format --write ."
+    "format": "biome format --write .",
+    "start": "bun ."
   },
   "dependencies": {
     "croner": "^9.0.0",
