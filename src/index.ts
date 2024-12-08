@@ -5,6 +5,10 @@ import { directoryExists, getAlertSlug, getRepoSlug } from './utils';
 import { rimraf } from 'rimraf';
 import type { Listing } from './types';
 
+import stamp from 'console-stamp';
+
+stamp(console);
+
 const { CRON_PATTERN, DISCORD_WEBHOOK_URL } = process.env;
 if (!(CRON_PATTERN && DISCORD_WEBHOOK_URL)) {
   throw new Error('One or more environment variables are missing.');
@@ -128,9 +132,8 @@ async function sendListingAlert(repoSlug: string, listing: Listing) {
           },
           {
             name: 'Season',
-            value: 'terms' in listing
-              ? listing.terms.join(', ')
-              : listing.season,
+            value:
+              'terms' in listing ? listing.terms.join(', ') : listing.season,
             inline: true
           },
           {
