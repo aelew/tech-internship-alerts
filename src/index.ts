@@ -15,13 +15,20 @@ async function updateGitRepos() {
     const repoSlug = getRepoSlug(repoUrl);
     const localPath = `./data/repos/${repoSlug.replace('/', '-')}`;
 
+    async function cloneRepo() {
+      console.log(`Cloning ${repoSlug} -> ${localPath}...`);
+      await git().clone(repoUrl, localPath, ['--depth=1']);
+      console.log(`Cloned ${repoSlug} -> ${localPath}...`);
+    }
+
     if (await directoryExists(localPath)) {
       const repoListingsPathFile = Bun.file(
         `${localPath}/.github/scripts/listings.json`
       );
       if (!(await repoListingsPathFile.exists())) {
-        console.log(`Skipping ${repoSlug}, missing listings file...`);
-        return;
+        console.log(`Recloning ${repoSlug} (incomplete repo)`);
+        await rimraf(localPath);
+        await cloneRepo();
       }
 
       try {
@@ -36,18 +43,12 @@ async function updateGitRepos() {
         }
       } catch (err) {
         console.error(err);
-        console.error(`Failed to pull ${repoSlug}, recloning...`);
-
+        console.error(`Recloning ${repoSlug} (pull failed)`);
         await rimraf(localPath);
-
-        console.log(`Recloning ${repoSlug} -> ${localPath}...`);
-        await git().clone(repoUrl, localPath, ['--depth=1']);
-        console.log(`Cloned ${repoSlug} -> ${localPath}...`);
+        await cloneRepo();
       }
     } else {
-      console.log(`Cloning ${repoSlug} -> ${localPath}...`);
-      await git().clone(repoUrl, localPath, ['--depth=1']);
-      console.log(`Cloned ${repoSlug} -> ${localPath}...`);
+      await cloneRepo();
     }
   }
 }
@@ -127,7 +128,6 @@ async function sendListingAlert(repoSlug: string, listing: Listing) {
           },
           {
             name: 'Season',
-            // biome-ignore format: readability
             value: 'terms' in listing
               ? listing.terms.join(', ')
               : listing.season,
