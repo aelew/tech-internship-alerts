@@ -21,7 +21,17 @@ async function updateGitRepos() {
 
     async function cloneRepo() {
       console.log(`Cloning ${repoSlug} -> ${localPath}...`);
-      await git().clone(repoUrl, localPath, ['--depth=1']);
+
+      await git().clone(repoUrl, localPath, [
+        '--sparse',
+        '--depth=1',
+        '--filter=blob:none'
+      ]);
+
+      await git()
+        .cwd(localPath)
+        .raw('sparse-checkout', 'set', '.github/scripts');
+
       console.log(`Cloned ${repoSlug} -> ${localPath}...`);
     }
 
