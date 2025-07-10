@@ -10,7 +10,7 @@ export async function directoryExists(path: string) {
   return true;
 }
 
-export function getRepoSlug(url: string) {
+export function getRepositorySlug(url: string) {
   return new URL(url).pathname.slice(1).replace('.git', '');
 }
 

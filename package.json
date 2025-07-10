@@ -10,18 +10,21 @@
     "start": "bun ."
   },
   "dependencies": {
+    "@t3-oss/env-core": "^0.13.8",
     "console-stamp": "^3.1.2",
     "croner": "^9.0.0",
     "only-allow": "^1.2.1",
+    "p-queue": "^8.1.0",
     "rimraf": "^6.0.1",
-    "simple-git": "^3.27.0"
+    "simple-git": "^3.27.0",
+    "zod": "^4.0.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@types/bun": "latest"
+    "@types/bun": "^1.2.18"
   },
   "peerDependencies": {
-    "typescript": "^5.7.2"
+    "typescript": "^5.8.3"
   },
   "trustedDependencies": ["@biomejs/biome"]
 }

@@ -1,3 +1,25 @@
+export interface Config {
+  cronPattern: string;
+  roleTypes: Record<string, RoleTypeConfig>;
+}
+
+interface RoleTypeConfig {
+  integrations: {
+    discord: DiscordIntegration;
+  };
+  repositories: string[];
+}
+
+export interface DiscordIntegration {
+  webhookUrl: string;
+  roleId?: string;
+}
+
+export interface AlertData {
+  messageId: string;
+  payload: Record<string, any>;
+}
+
 export type Listing = {
   id: string;
   source: string;
