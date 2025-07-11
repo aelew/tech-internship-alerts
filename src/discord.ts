@@ -21,6 +21,13 @@ export async function publishNewListing(
   repoSlug: string,
   listing: Listing
 ) {
+  let season = '--';
+  if ('season' in listing) {
+    season = listing.season;
+  } else if ('terms' in listing) {
+    season = listing.terms.join(', ');
+  }
+
   const payload = {
     content: integration.roleId
       ? `<@&${integration.roleId}> • ${listing.company_name}`
@@ -50,8 +57,7 @@ export async function publishNewListing(
           },
           {
             name: 'Season',
-            value:
-              'terms' in listing ? listing.terms.join(', ') : listing.season,
+            value: season,
             inline: true
           },
           {

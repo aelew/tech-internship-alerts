@@ -33,4 +33,4 @@ export type Listing = {
   is_visible: boolean;
   date_posted: number;
   date_updated: number;
-} & ({ season: string } | { terms: string[] });
+} & ({ season: string } | { terms: string[] } | {});
