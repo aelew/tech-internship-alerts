@@ -6,6 +6,7 @@ export const env = createEnv({
   runtimeEnv: process.env,
   isServer: true,
   server: {
+    NODE_ENV: z.enum(['development', 'production']).default('development'),
     CRON_PATTERN: z.string(),
 
     INTERNSHIP_WEBHOOK_URL: z.url(),

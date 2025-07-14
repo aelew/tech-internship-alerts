@@ -8,6 +8,7 @@ import { config } from './config';
 import type { BunFile } from 'bun';
 import { publishNewListing, closePublishedListing } from './discord';
 import PQueue from 'p-queue';
+import { env } from './env';
 
 stamp(console);
 
@@ -58,7 +59,10 @@ async function updateGitRepositories() {
     try {
       const { summary } = await git().cwd(path).pull();
 
-      if (summary.changes || summary.insertions || summary.deletions) {
+      if (
+        env.NODE_ENV === 'development' &&
+        (summary.changes || summary.insertions || summary.deletions)
+      ) {
         console.log(
           'Pulled',
           slug,
