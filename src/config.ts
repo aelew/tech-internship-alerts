@@ -12,8 +12,8 @@ export const config: Config = {
         }
       },
       repositories: [
-        'https://github.com/vanshb03/Summer2026-Internships',
-        'https://github.com/SimplifyJobs/Summer2026-Internships'
+        'https://github.com/SimplifyJobs/Summer2026-Internships',
+        'https://github.com/vanshb03/Summer2026-Internships'
       ]
     },
     newGrad: {
@@ -24,8 +24,8 @@ export const config: Config = {
         }
       },
       repositories: [
-        'https://github.com/SimplifyJobs/New-Grad-Positions'
-        //
+        'https://github.com/SimplifyJobs/New-Grad-Positions',
+        'https://github.com/vanshb03/New-Grad-2025'
       ]
     }
   }
