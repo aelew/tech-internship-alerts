@@ -3,6 +3,8 @@ import type { Config } from './types';
 
 export const config: Config = {
   cronPattern: env.CRON_PATTERN,
+  updateQueueInterval: 1500,
+  maxPostAge: 4 * 24 * 60 * 60 * 1000,
   roleTypes: {
     internship: {
       integrations: {

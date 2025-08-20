@@ -12,10 +12,10 @@ import { env } from './env';
 
 stamp(console);
 
-const queue = new PQueue({
+const updateQueue = new PQueue({
   concurrency: 1,
   intervalCap: 1,
-  interval: 1000
+  interval: config.updateQueueInterval
 });
 
 async function updateGitRepositories() {
@@ -143,8 +143,14 @@ async function checkListings() {
           } opened ${roleType.toUpperCase()} listings in ${slug}`
         );
 
+        const now = Date.now();
+
         opened.forEach((listing) => {
-          queue
+          if (listing.date_posted * 1000 < now - config.maxPostAge) {
+            return;
+          }
+
+          updateQueue
             .add(() => publishNewListing(integrations.discord, slug, listing))
             .catch(console.error);
         });
@@ -158,7 +164,7 @@ async function checkListings() {
         );
 
         closed.forEach((listing) => {
-          queue
+          updateQueue
             .add(() =>
               closePublishedListing(integrations.discord, slug, listing)
             )
