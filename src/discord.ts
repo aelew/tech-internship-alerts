@@ -28,10 +28,13 @@ export async function publishNewListing(
     season = listing.terms.join(', ');
   }
 
+  let textContent = `${listing.company_name} • ${listing.title}`;
+  if (integration.roleId) {
+    textContent = `<@&${integration.roleId}>\n${textContent}`;
+  }
+
   const payload = {
-    content: integration.roleId
-      ? `<@&${integration.roleId}> • ${listing.company_name}`
-      : listing.company_name,
+    content: textContent,
     embeds: [
       {
         color: 16755763,
