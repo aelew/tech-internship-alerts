@@ -84,7 +84,12 @@ async function compareListings(
     return { opened: [], closed: [] };
   }
 
-  const repoListings: Listing[] = await repoListingsFile.json();
+  let repoListings: Listing[] = await repoListingsFile.json();
+
+  // deduplicate listings by ID
+  repoListings = Array.from(
+    new Map(repoListings.map((listing) => [listing.id, listing])).values()
+  );
 
   let opened: Listing[] = [];
   const closed: Listing[] = [];
