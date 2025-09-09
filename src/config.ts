@@ -15,7 +15,8 @@ export const config: Config = {
       },
       repositories: [
         'https://github.com/SimplifyJobs/Summer2026-Internships',
-        'https://github.com/vanshb03/Summer2026-Internships'
+        'https://github.com/vanshb03/Summer2026-Internships',
+        'https://github.com/aelew/tech-internship-feed'
       ]
     },
     newGrad: {
