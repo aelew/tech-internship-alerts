@@ -28,7 +28,7 @@ export const config: Config = {
       },
       repositories: [
         'https://github.com/SimplifyJobs/New-Grad-Positions',
-        'https://github.com/vanshb03/New-Grad-2025'
+        'https://github.com/vanshb03/New-Grad-2026'
       ]
     }
   }
