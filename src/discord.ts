@@ -21,7 +21,7 @@ export async function publishNewListing(
   repoSlug: string,
   listing: Listing
 ) {
-  let season = '--';
+  let season = 'N/A';
   if ('season' in listing) {
     season = listing.season;
   } else if ('terms' in listing) {
