@@ -7,24 +7,25 @@
   "scripts": {
     "preinstall": "npx only-allow bun",
     "format": "biome format --write .",
-    "start": "bun ."
+    "start": "bun .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.8",
     "console-stamp": "^3.1.2",
-    "croner": "^9.0.0",
+    "croner": "^9.1.0",
     "only-allow": "^1.2.1",
-    "p-queue": "^8.1.0",
+    "p-queue": "^9.0.0",
     "rimraf": "^6.0.1",
-    "simple-git": "^3.27.0",
-    "zod": "^4.0.2"
+    "simple-git": "^3.28.0",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@types/bun": "^1.2.18"
+    "@types/bun": "^1.2.23"
   },
   "peerDependencies": {
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "trustedDependencies": ["@biomejs/biome"]
 }
