@@ -69,8 +69,8 @@ async function updateGitRepositories() {
           `(${summary.changes} changes, ${summary.insertions} insertions, ${summary.deletions} deletions)`
         );
       }
-    } catch (error) {
-      console.error(`Recloning ${slug} (pull failed)`, error);
+    } catch (err) {
+      console.error(`Recloning ${slug} (pull failed)`, err);
       await reclone();
     }
   }
@@ -95,29 +95,33 @@ async function compareListings(
   const closed: Listing[] = [];
 
   if (await localListingsFile.exists()) {
-    const localListings: Listing[] = await localListingsFile.json();
+    try {
+      const localListings: Listing[] = await localListingsFile.json();
 
-    opened = repoListings.filter((repoListing) => {
-      const localListing = localListings.find(
-        (listing) =>
-          listing.id === repoListing.id &&
-          listing.company_name === repoListing.company_name
-      );
+      opened = repoListings.filter((repoListing) => {
+        const localListing = localListings.find(
+          (listing) =>
+            listing.id === repoListing.id &&
+            listing.company_name === repoListing.company_name
+        );
 
-      if (!localListing) {
-        return repoListing.active && repoListing.is_visible;
-      }
+        if (!localListing) {
+          return repoListing.active && repoListing.is_visible;
+        }
 
-      // listing is now inactive or hidden
-      if (
-        (localListing.active && !repoListing.active) ||
-        (localListing.is_visible && !repoListing.is_visible)
-      ) {
-        closed.push(repoListing);
-      }
+        // listing is now inactive or hidden
+        if (
+          (localListing.active && !repoListing.active) ||
+          (localListing.is_visible && !repoListing.is_visible)
+        ) {
+          closed.push(repoListing);
+        }
 
-      return false;
-    });
+        return false;
+      });
+    } catch (err) {
+      console.error('Failed to parse local listings file', err);
+    }
   }
 
   // save current listings for next comparison
