@@ -5,6 +5,7 @@ export const config: Config = {
   cronPattern: env.CRON_PATTERN,
   updateQueueInterval: 1500,
   maxPostAge: 4 * 24 * 60 * 60 * 1000,
+  excludedLocationKeywords: [', Canada', ', UK', 'United Kingdom'],
   roleTypes: {
     internship: {
       integrations: {

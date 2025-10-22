@@ -84,11 +84,17 @@ async function compareListings(
     return { opened: [], closed: [] };
   }
 
-  let repoListings: Listing[] = await repoListingsFile.json();
+  const rawListings: Listing[] = await repoListingsFile.json();
 
-  // deduplicate listings by ID
-  repoListings = Array.from(
-    new Map(repoListings.map((listing) => [listing.id, listing])).values()
+  const repoListings = Array.from(
+    // dedupe listings by ID
+    new Map(rawListings.map((l) => [l.id, l])).values()
+  ).filter(
+    // filter out excluded locations
+    (listing) =>
+      !config.excludedLocationKeywords.some((keyword) =>
+        listing.locations.some((location) => location.includes(keyword))
+      )
   );
 
   let opened: Listing[] = [];

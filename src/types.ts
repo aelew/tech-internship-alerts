@@ -2,6 +2,7 @@ export interface Config {
   cronPattern: string;
   updateQueueInterval: number;
   maxPostAge: number;
+  excludedLocationKeywords: string[];
   roleTypes: Record<string, RoleTypeConfig>;
 }
 
