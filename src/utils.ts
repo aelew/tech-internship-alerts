@@ -1,4 +1,5 @@
 import { readdir } from 'node:fs/promises';
+
 import type { Listing } from './types';
 
 export async function directoryExists(path: string) {

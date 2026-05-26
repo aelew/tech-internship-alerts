@@ -1,14 +1,15 @@
-import { Cron } from 'croner';
-import { simpleGit as git } from 'simple-git';
-import { directoryExists, getRepositorySlug } from './utils';
-import { rimraf } from 'rimraf';
-import type { Listing } from './types';
-import stamp from 'console-stamp';
-import { config } from './config';
 import type { BunFile } from 'bun';
-import { publishNewListing, closePublishedListing } from './discord';
+import stamp from 'console-stamp';
+import { Cron } from 'croner';
 import PQueue from 'p-queue';
+import { rimraf } from 'rimraf';
+import { simpleGit as git } from 'simple-git';
+
+import { config } from './config';
+import { closePublishedListing, publishNewListing } from './discord';
 import { env } from './env';
+import type { Listing } from './types';
+import { directoryExists, getRepositorySlug } from './utils';
 
 stamp(console);
 
